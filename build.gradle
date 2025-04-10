@@ -6,19 +6,19 @@ plugins {
     id 'com.diffplug.spotless' version '6.25.0'
     id 'io.codearte.nexus-staging' version '0.30.0'
     id 'de.marcphilipp.nexus-publish' version '0.4.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.24'
+    id 'org.jetbrains.kotlin.jvm' version '2.1.0'
     id 'de.undercouch.download' version '4.1.2'
 }
 
 description 'Web3j-evm extension'
 
 ext {
-    web3jVersion = '4.13.0'
+    web3jVersion = '4.14.0'
     log4jVersion = '2.23.1'
     guavaVersion = '33.2.0-jre'
     jacksonVersion = '2.10.0'
     klaxonVersion = '5.6'
-    kotlinVersion = '1.9.24'
+    kotlinVersion = '2.1.0'
     besuPluginVersion = '25.2.1'
     besuInternalVersion = '25.2.1'
     besuInternalCryptoVersion = '23.1.3'
