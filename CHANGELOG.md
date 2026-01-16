@@ -7,7 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-*
+* fix maven release [#124](https://github.com/LFDT-web3j/web3j-evm/pull/124)
 
 ### Features
 
