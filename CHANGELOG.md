@@ -3,11 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [4.14.1]() (Upcoming)
+# [5.0.2]() (Upcoming)
 
 ### Bug Fixes
 
 * fix maven release [#124](https://github.com/LFDT-web3j/web3j-evm/pull/124)
+
+### Features
+
+* bump snapshot version to 4.14.1 [#123](https://github.com/hyperledger-web3j/web3j-evm/pull/123)
+
+### BREAKING CHANGES
+
+*
+
+# [5.0.1](https://github.com/LFDT-web3j/web3j-evm/releases/tag/v5.0.1) (2026-01-16)
+
+### Bug Fixes
+
+* fix maven release and web3j upgrade [#124](https://github.com/LFDT-web3j/web3j-evm/pull/124)
 
 ### Features
 
