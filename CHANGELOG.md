@@ -2,8 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+# [5.0.3]() (Upcoming)
 
-# [5.0.2]() (Upcoming)
+### Bug Fixes
+
+* 
+
+### Features
+
+* 
+
+### BREAKING CHANGES
+
+* 
+
+# [5.0.2](https://github.com/LFDT-web3j/web3j-evm/releases/tag/v5.0.2) (2026-02-05)
 
 ### Bug Fixes
 
