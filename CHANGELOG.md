@@ -15,7 +15,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### BREAKING CHANGES
 
-*
+* gradle 9 [#126](https://github.com/LFDT-web3j/web3j-evm/pull/126)
 
 # [5.0.1](https://github.com/LFDT-web3j/web3j-evm/releases/tag/v5.0.1) (2026-01-16)
 
