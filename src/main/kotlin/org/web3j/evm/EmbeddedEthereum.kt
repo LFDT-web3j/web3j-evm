@@ -405,14 +405,15 @@ class EmbeddedEthereum(
 
 private fun wTransaction.asCallParameter(): CallParameter {
     with(this) {
-        return ImmutableCallParameter.builder()
-            .sender(Address.fromHexString(from))
-            .to(Address.fromHexString(to))
+        val builder = ImmutableCallParameter.builder()
             .gas(Long.MAX_VALUE)
             .gasPrice(Wei.ZERO)
             .value(Wei.ZERO)
-            .input(Bytes.fromHexString(data))
-            .build()
+            .input(Bytes.fromHexString(data ?: "0x"))
+        from?.let { builder.sender(Address.fromHexString(it)) }
+        // `to` is absent for contract-creation calls.
+        to?.let { builder.to(Address.fromHexString(it)) }
+        return builder.build()
     }
 }
 
