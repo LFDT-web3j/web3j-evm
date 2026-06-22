@@ -14,7 +14,6 @@ package org.web3j.evm
 
 import org.apache.tuweni.bytes.Bytes
 import org.apache.tuweni.units.bigints.UInt256
-import org.hyperledger.besu.config.GenesisConfig
 import org.hyperledger.besu.datatypes.Address
 import org.hyperledger.besu.datatypes.Hash
 import org.hyperledger.besu.datatypes.Wei

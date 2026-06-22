@@ -34,9 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * EIP-7951: the secp256r1 (P-256) signature verification precompile {@code P256VERIFY} at address
  * {@code 0x0000000000000000000000000000000000000100}, activated at Osaka.
  *
- * <p>The 160-byte input is {@code hash || r || s || qx || qy}. A valid signature returns the 32-byte
- * word {@code 1}; an invalid one returns empty output. A pre-Osaka EVM has no code at {@code 0x100},
- * so a "valid" call would return empty too — the {@code 1} word is the proof the precompile is live.
+ * <p>The 160-byte input is {@code hash || r || s || qx || qy}. A valid signature returns the
+ * 32-byte word {@code 1}; an invalid one returns empty output. A pre-Osaka EVM has no code at
+ * {@code 0x100}, so a "valid" call would return empty too — the {@code 1} word is the proof the
+ * precompile is live.
  *
  * <p>Signatures are generated with the JDK's SunEC provider rather than hard-coded vectors.
  */

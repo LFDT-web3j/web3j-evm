@@ -45,11 +45,39 @@ public class Eip7883And7823ModExpTest {
     // RETURNDATASIZE PUSH1 0 PUSH1 0x20 RETURNDATACOPY
     // RETURNDATASIZE PUSH1 0x20 ADD PUSH1 0 RETURN
     private static final byte[] CALL_RUNTIME = {
-        0x36, 0x60, 0x00, 0x60, 0x00, 0x37,
-        0x60, 0x00, 0x60, 0x00, 0x36, 0x60, 0x00, 0x60, 0x05, 0x5a, (byte) 0xfa,
-        0x60, 0x00, 0x52,
-        0x3d, 0x60, 0x00, 0x60, 0x20, 0x3e,
-        0x3d, 0x60, 0x20, 0x01, 0x60, 0x00, (byte) 0xf3
+        0x36,
+        0x60,
+        0x00,
+        0x60,
+        0x00,
+        0x37,
+        0x60,
+        0x00,
+        0x60,
+        0x00,
+        0x36,
+        0x60,
+        0x00,
+        0x60,
+        0x05,
+        0x5a,
+        (byte) 0xfa,
+        0x60,
+        0x00,
+        0x52,
+        0x3d,
+        0x60,
+        0x00,
+        0x60,
+        0x20,
+        0x3e,
+        0x3d,
+        0x60,
+        0x20,
+        0x01,
+        0x60,
+        0x00,
+        (byte) 0xf3
     };
 
     // Measures the gas consumed by the MODEXP STATICCALL and returns it as a 32-byte word.
@@ -59,11 +87,36 @@ public class Eip7883And7823ModExpTest {
     // GAS SWAP1 SUB
     // PUSH1 0 MSTORE PUSH1 0x20 PUSH1 0 RETURN
     private static final byte[] GAS_RUNTIME = {
-        0x36, 0x60, 0x00, 0x60, 0x00, 0x37,
+        0x36,
+        0x60,
+        0x00,
+        0x60,
+        0x00,
+        0x37,
         0x5a,
-        0x60, 0x00, 0x60, 0x00, 0x36, 0x60, 0x00, 0x60, 0x05, 0x5a, (byte) 0xfa, 0x50,
-        0x5a, (byte) 0x90, 0x03,
-        0x60, 0x00, 0x52, 0x60, 0x20, 0x60, 0x00, (byte) 0xf3
+        0x60,
+        0x00,
+        0x60,
+        0x00,
+        0x36,
+        0x60,
+        0x00,
+        0x60,
+        0x05,
+        0x5a,
+        (byte) 0xfa,
+        0x50,
+        0x5a,
+        (byte) 0x90,
+        0x03,
+        0x60,
+        0x00,
+        0x52,
+        0x60,
+        0x20,
+        0x60,
+        0x00,
+        (byte) 0xf3
     };
 
     private EmbeddedEthereum evm;
@@ -98,7 +151,8 @@ public class Eip7883And7823ModExpTest {
         final byte[] input =
                 modExpInput(1, 1, 1, new byte[] {0x03}, new byte[] {0x02}, new byte[] {0x05});
 
-        final byte[] out = Numeric.hexStringToByteArray(OsakaEvmTestSupport.call(evm, contract, input));
+        final byte[] out =
+                Numeric.hexStringToByteArray(OsakaEvmTestSupport.call(evm, contract, input));
 
         // word0 = success flag, remaining bytes = precompile output (modLen = 1 byte).
         assertEquals(BigInteger.ONE, new BigInteger(1, java.util.Arrays.copyOfRange(out, 0, 32)));
@@ -114,7 +168,8 @@ public class Eip7883And7823ModExpTest {
         mod[1023] = 0x05;
         final byte[] input = modExpInput(1, 1, 1024, new byte[] {0x03}, new byte[] {0x02}, mod);
 
-        final byte[] out = Numeric.hexStringToByteArray(OsakaEvmTestSupport.call(evm, contract, input));
+        final byte[] out =
+                Numeric.hexStringToByteArray(OsakaEvmTestSupport.call(evm, contract, input));
 
         assertEquals(BigInteger.ONE, new BigInteger(1, java.util.Arrays.copyOfRange(out, 0, 32)));
     }
@@ -126,7 +181,8 @@ public class Eip7883And7823ModExpTest {
         final byte[] input =
                 modExpInput(1, 1, 1025, new byte[] {0x03}, new byte[] {0x02}, new byte[0]);
 
-        final byte[] out = Numeric.hexStringToByteArray(OsakaEvmTestSupport.call(evm, contract, input));
+        final byte[] out =
+                Numeric.hexStringToByteArray(OsakaEvmTestSupport.call(evm, contract, input));
 
         // Only the success word is returned, and it must signal failure.
         assertEquals(32, out.length);

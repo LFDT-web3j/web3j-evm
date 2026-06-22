@@ -49,12 +49,17 @@ public final class OsakaEvmTestSupport {
         }
         // PUSH1 len, PUSH1 0x0c, PUSH1 0x00, CODECOPY, PUSH1 len, PUSH1 0x00, RETURN  (12 bytes)
         final byte[] prefix = {
-            0x60, (byte) len,
-            0x60, 0x0c,
-            0x60, 0x00,
+            0x60,
+            (byte) len,
+            0x60,
+            0x0c,
+            0x60,
+            0x00,
             0x39,
-            0x60, (byte) len,
-            0x60, 0x00,
+            0x60,
+            (byte) len,
+            0x60,
+            0x00,
             (byte) 0xf3,
         };
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -76,14 +81,14 @@ public final class OsakaEvmTestSupport {
         return receipt.getContractAddress();
     }
 
-    /** Performs an {@code eth_call} against the contract with the given calldata, returning output. */
+    /**
+     * Performs an {@code eth_call} against the contract with the given calldata, returning output.
+     */
     public static String call(
             final EmbeddedEthereum evm, final String contractAddress, final byte[] calldata) {
         final Transaction tx =
                 Transaction.createEthCallTransaction(
-                        Address.DEFAULT.toString(),
-                        contractAddress,
-                        Numeric.toHexString(calldata));
+                        Address.DEFAULT.toString(), contractAddress, Numeric.toHexString(calldata));
         return evm.ethCall(tx);
     }
 
