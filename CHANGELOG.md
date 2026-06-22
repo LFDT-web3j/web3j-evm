@@ -15,7 +15,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### BREAKING CHANGES
 
--
+- Upgraded Besu Version and added support for Fusaka [#129](https://github.com/hyperledger-web3j/web3j-evm/pull/129)
 
 # [5.0.3](https://github.com/LFDT-web3j/web3j-evm/releases/tag/v5.0.3) (2026-06-17)
 
