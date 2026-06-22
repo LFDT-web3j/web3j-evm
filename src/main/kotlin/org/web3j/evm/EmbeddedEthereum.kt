@@ -12,11 +12,8 @@
  */
 package org.web3j.evm
 
-import com.google.common.io.Resources
 import org.apache.tuweni.bytes.Bytes
 import org.apache.tuweni.units.bigints.UInt256
-import org.hyperledger.besu.cli.config.EthNetworkConfig
-import org.hyperledger.besu.cli.config.NetworkName
 import org.hyperledger.besu.config.GenesisConfig
 import org.hyperledger.besu.datatypes.Address
 import org.hyperledger.besu.datatypes.Hash
@@ -33,12 +30,13 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.TransactionRec
 import org.hyperledger.besu.ethereum.api.query.TransactionReceiptWithMetadata
 import org.hyperledger.besu.ethereum.chain.BadBlockManager
 import org.hyperledger.besu.ethereum.core.MiningConfiguration
-import org.hyperledger.besu.ethereum.core.PrivacyParameters
 import org.hyperledger.besu.ethereum.core.Transaction
+import org.hyperledger.besu.ethereum.mainnet.BalConfiguration
 import org.hyperledger.besu.ethereum.mainnet.MainnetProtocolSchedule
 import org.hyperledger.besu.ethereum.mainnet.TransactionReceiptType
 import org.hyperledger.besu.ethereum.rlp.RLP
 import org.hyperledger.besu.ethereum.transaction.CallParameter
+import org.hyperledger.besu.ethereum.transaction.ImmutableCallParameter
 import org.hyperledger.besu.evm.internal.EvmConfiguration
 import org.hyperledger.besu.evm.tracing.OperationTracer
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem
@@ -49,7 +47,6 @@ import org.web3j.protocol.core.methods.response.EthBlock
 import org.web3j.protocol.core.methods.response.EthBlock.Withdrawal
 import org.web3j.utils.Numeric
 import java.math.BigInteger
-import java.nio.charset.StandardCharsets
 import java.util.Optional
 import org.web3j.abi.datatypes.Address as wAddress
 import org.web3j.protocol.core.methods.request.Transaction as wTransaction
@@ -134,29 +131,18 @@ class EmbeddedEthereum(
     fun getTransactionReceipt(transactionHashParam: String): wTransactionReceipt? {
         val hash = Hash.fromHexStringLenient(transactionHashParam)
 
-        val genesisConfig = if (configuration.genesisFileUrl === null) {
-            val networkConfig = EthNetworkConfig.getNetworkConfig(NetworkName.DEV)
-            networkConfig.genesisConfig
-        } else {
-            GenesisConfig.fromConfig(
-                @Suppress("UnstableApiUsage")
-                Resources.toString(
-                    configuration.genesisFileUrl,
-                    StandardCharsets.UTF_8,
-                ),
-            )
-        }
+        val genesisConfig = InMemoryBesuChain.loadGenesisConfig(configuration)
 
         val configOptions = genesisConfig.withOverrides(InMemoryBesuChain.DEFAULT_GENESIS_OVERRIDES).getConfigOptions()
 
         val protocolSchedule = MainnetProtocolSchedule.fromConfig(
             configOptions,
-            Optional.of(PrivacyParameters.DEFAULT),
             Optional.of(true),
             Optional.of(EvmConfiguration.DEFAULT),
             MiningConfiguration.newDefault(),
             BadBlockManager(),
             false,
+            BalConfiguration.DEFAULT,
             NoOpMetricsSystem(),
         )
 
@@ -386,7 +372,9 @@ class EmbeddedEthereum(
     }
 
     fun ethGetBlockTransactionCountByHash(hash: Hash): String {
-        return Numeric.encodeQuantity(BigInteger.valueOf(blockchainQueries.getTransactionCount(hash).toLong()))
+        return Numeric.encodeQuantity(
+            BigInteger.valueOf(blockchainQueries.getTransactionCount(hash).orElse(0).toLong()),
+        )
     }
 
     fun ethGetBlockTransactionCountByNumber(blockNumber: Long): String {
@@ -417,14 +405,14 @@ class EmbeddedEthereum(
 
 private fun wTransaction.asCallParameter(): CallParameter {
     with(this) {
-        return CallParameter(
-            Address.fromHexString(from),
-            Address.fromHexString(to),
-            Long.MAX_VALUE,
-            Wei.ZERO,
-            Wei.ZERO,
-            Bytes.fromHexString(data),
-        )
+        return ImmutableCallParameter.builder()
+            .sender(Address.fromHexString(from))
+            .to(Address.fromHexString(to))
+            .gas(Long.MAX_VALUE)
+            .gasPrice(Wei.ZERO)
+            .value(Wei.ZERO)
+            .input(Bytes.fromHexString(data))
+            .build()
     }
 }
 
