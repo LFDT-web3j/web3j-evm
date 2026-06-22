@@ -11,7 +11,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
--
+- Bump snapshot to 5.0.4 and fix tests [#128](https://github.com/hyperledger-web3j/web3j-evm/pull/128)
 
 ### BREAKING CHANGES
 
