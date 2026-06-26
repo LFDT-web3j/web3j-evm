@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [5.0.4]() (Upcoming)
+# [6.0.0]() (Upcoming)
 
 ### Bug Fixes
 
@@ -11,7 +11,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-- Bump snapshot to 5.0.4 and fix tests [#128](https://github.com/hyperledger-web3j/web3j-evm/pull/128)
+- Bump snapshot to 6.0.0 and fix tests [#130](https://github.com/hyperledger-web3j/web3j-evm/pull/130)
 
 ### BREAKING CHANGES
 
