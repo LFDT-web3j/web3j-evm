@@ -14,10 +14,10 @@ package org.web3j.evm
 
 import com.google.common.io.Resources
 import org.apache.tuweni.bytes.Bytes
-import org.hyperledger.besu.cli.config.EthNetworkConfig
-import org.hyperledger.besu.cli.config.NetworkName
+import org.apache.tuweni.bytes.Bytes32
 import org.hyperledger.besu.config.GenesisConfig
 import org.hyperledger.besu.datatypes.Address
+import org.hyperledger.besu.datatypes.BlobGas
 import org.hyperledger.besu.datatypes.Hash
 import org.hyperledger.besu.datatypes.Wei
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.BlockResult
@@ -30,17 +30,19 @@ import org.hyperledger.besu.ethereum.chain.MutableBlockchain
 import org.hyperledger.besu.ethereum.core.Block
 import org.hyperledger.besu.ethereum.core.BlockBody
 import org.hyperledger.besu.ethereum.core.BlockHeaderBuilder
+import org.hyperledger.besu.ethereum.core.Difficulty
 import org.hyperledger.besu.ethereum.core.MiningConfiguration
 import org.hyperledger.besu.ethereum.core.MutableWorldState
-import org.hyperledger.besu.ethereum.core.PrivacyParameters
 import org.hyperledger.besu.ethereum.core.ProcessableBlockHeader
 import org.hyperledger.besu.ethereum.core.Transaction
 import org.hyperledger.besu.ethereum.core.TransactionReceipt
+import org.hyperledger.besu.ethereum.mainnet.BalConfiguration
 import org.hyperledger.besu.ethereum.mainnet.BodyValidation
 import org.hyperledger.besu.ethereum.mainnet.MainnetBlockHeaderFunctions
 import org.hyperledger.besu.ethereum.mainnet.MainnetProtocolSchedule
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule
 import org.hyperledger.besu.ethereum.mainnet.ScheduleBasedBlockHeaderFunctions
+import org.hyperledger.besu.ethereum.mainnet.TransactionValidationParams
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStoragePrefixedKeyBlockchainStorage
 import org.hyperledger.besu.ethereum.storage.keyvalue.VariablesKeyValueStorage
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStatePreimageKeyValueStorage
@@ -49,6 +51,7 @@ import org.hyperledger.besu.ethereum.transaction.TransactionSimulator
 import org.hyperledger.besu.ethereum.transaction.TransactionSimulatorResult
 import org.hyperledger.besu.ethereum.trie.forest.ForestWorldStateArchive
 import org.hyperledger.besu.ethereum.trie.forest.storage.ForestWorldStateKeyValueStorage
+import org.hyperledger.besu.ethereum.trie.pathbased.bonsai.cache.CodeCache
 import org.hyperledger.besu.ethereum.vm.BlockchainBasedBlockHashLookup
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorageCoordinator
@@ -68,7 +71,6 @@ import java.util.Optional
 class InMemoryBesuChain(
     configuration: Configuration,
     private val operationTracer: OperationTracer,
-    networkName: NetworkName = NetworkName.DEV,
     genesisConfigOverrides: Map<String, String> = DEFAULT_GENESIS_OVERRIDES,
 ) {
     val chainId: BigInteger
@@ -87,29 +89,18 @@ class InMemoryBesuChain(
     private val simulator: TransactionSimulator
 
     init {
-        val genesisConfig = if (configuration.genesisFileUrl === null) {
-            val networkConfig = EthNetworkConfig.getNetworkConfig(networkName)
-            networkConfig.genesisConfig
-        } else {
-            GenesisConfig.fromConfig(
-                @Suppress("UnstableApiUsage")
-                Resources.toString(
-                    configuration.genesisFileUrl,
-                    StandardCharsets.UTF_8,
-                ),
-            )
-        }
+        val genesisConfig = loadGenesisConfig(configuration)
         val configOptions = genesisConfig.withOverrides(genesisConfigOverrides).getConfigOptions()
         val miningConfiguration = MiningConfiguration.newDefault()
 
         protocolSchedule = MainnetProtocolSchedule.fromConfig(
             configOptions,
-            Optional.of(PrivacyParameters.DEFAULT),
             Optional.of(true),
             Optional.of(EvmConfiguration.DEFAULT),
             miningConfiguration,
             BadBlockManager(),
             false,
+            BalConfiguration.DEFAULT,
             NoOpMetricsSystem(),
         )
 
@@ -133,7 +124,7 @@ class InMemoryBesuChain(
         worldState = worldStateArchive.worldState
         worldStateUpdater = worldState.updater()
 
-        genesisState = GenesisState.fromConfig(genesisConfig, protocolSchedule)
+        genesisState = GenesisState.fromConfig(genesisConfig, protocolSchedule, CodeCache())
         genesisState.writeStateTo(worldState)
 
         LOG.debug("Genesis Block Hash: ${genesisState.block.hash}")
@@ -198,7 +189,7 @@ class InMemoryBesuChain(
             miningBeneficiary,
             operationTracer,
             blockHashLookup,
-            true,
+            TransactionValidationParams.processingBlockParams,
             Wei.MAX_WEI,
         )
 
@@ -220,6 +211,7 @@ class InMemoryBesuChain(
         )
         val receipts = listOf(transactionReceipt)
 
+        val withdrawals = emptyList<org.hyperledger.besu.ethereum.core.Withdrawal>()
         val sealableBlockHeader = BlockHeaderBuilder.create()
             .populateFrom(processableBlockHeader)
             .ommersHash(Hash.EMPTY_LIST_HASH)
@@ -229,16 +221,20 @@ class InMemoryBesuChain(
             .logsBloom(BodyValidation.logsBloom(receipts))
             .gasUsed(gasUsed)
             .extraData(Bytes.EMPTY)
+            .withdrawalsRoot(BodyValidation.withdrawalsRoot(withdrawals))
+            .blobGasUsed(0L)
+            .excessBlobGas(BlobGas.ZERO)
+            .requestsHash(Hash.EMPTY_REQUESTS_HASH)
             .buildSealableBlockHeader()
 
         val blockHeaderFunctions = ScheduleBasedBlockHeaderFunctions.create(protocolSchedule)
         val blockHeader = BlockHeaderBuilder.create()
             .populateFrom(sealableBlockHeader)
-            .nonce(blockChain.chainHeadHeader.nonce + 1)
+            .nonce(0L)
             .mixHash(Hash.ZERO)
             .blockHeaderFunctions(blockHeaderFunctions)
             .buildBlockHeader()
-        val block = Block(blockHeader, BlockBody(transactions, emptyList()))
+        val block = Block(blockHeader, BlockBody(transactions, emptyList(), Optional.of(withdrawals)))
 
         worldState.persist(blockHeader)
         blockChain.appendBlock(block, receipts)
@@ -253,11 +249,14 @@ class InMemoryBesuChain(
         return BlockHeaderBuilder.create()
             .parentHash(parentHeader.hash)
             .coinbase(miningBeneficiary)
-            .difficulty(parentHeader.difficulty.plus(100000))
+            .difficulty(Difficulty.ZERO)
+            .prevRandao(Bytes32.ZERO)
             .number(newBlockNumber)
             .gasLimit(parentHeader.gasLimit)
-            .timestamp(System.currentTimeMillis())
+            .timestamp(maxOf(parentHeader.timestamp + 1, System.currentTimeMillis() / 1000))
             .baseFee(parentHeader.baseFee.orElse(Wei.ZERO))
+            .blobGasUsed(0L)
+            .excessBlobGas(BlobGas.ZERO)
             .buildProcessableBlockHeader()
     }
 
@@ -303,9 +302,35 @@ class InMemoryBesuChain(
 
     companion object {
         private val LOG = LoggerFactory.getLogger(InMemoryBesuChain::class.java)
-        internal val DEFAULT_GENESIS_OVERRIDES = mapOf(
-            "londonblock" to "1",
-            "petersburgblock" to "0",
-        )
+
+        /**
+         * Default dev genesis resource: an all-forks-at-genesis, post-Merge chain whose latest
+         * active fork is Osaka (Fusaka). This is what activates EIP-7939 (CLZ), EIP-7883 / EIP-7823
+         * (MODEXP) and EIP-7951 (P256VERIFY) inside the embedded Besu EVM.
+         */
+        private const val DEFAULT_GENESIS_RESOURCE = "genesis/dev.json"
+
+        /**
+         * The genesis already pins every fork at genesis, so no fork overrides are needed by
+         * default. Callers may still supply their own to pin an earlier fork.
+         */
+        internal val DEFAULT_GENESIS_OVERRIDES = emptyMap<String, String>()
+
+        internal fun loadGenesisConfig(configuration: Configuration): GenesisConfig {
+            val genesisJson = if (configuration.genesisFileUrl === null) {
+                @Suppress("UnstableApiUsage")
+                Resources.toString(
+                    Resources.getResource(DEFAULT_GENESIS_RESOURCE),
+                    StandardCharsets.UTF_8,
+                )
+            } else {
+                @Suppress("UnstableApiUsage")
+                Resources.toString(
+                    configuration.genesisFileUrl,
+                    StandardCharsets.UTF_8,
+                )
+            }
+            return GenesisConfig.fromConfig(genesisJson)
+        }
     }
 }

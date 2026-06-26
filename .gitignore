@@ -38,6 +38,7 @@ gradle-app.setting
 *.iml
 *.ipr
 *.iws
+.vscode
 
 geth.sh
 
