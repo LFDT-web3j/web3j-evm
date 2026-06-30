@@ -19,8 +19,8 @@ ext {
     jacksonVersion = '2.10.0'
     klaxonVersion = '5.6'
     kotlinVersion = '2.1.0'
-    besuVersion = '26.2.0'        // org.hyperledger.besu(.internal):besu-*  (jfrog besu-maven repo)
-    besuNativeVersion = '1.4.2'   // arithmetic / gnark / secp256k1 / boringssl (own version line)
+    besuVersion = '26.2.0'
+    besuNativeVersion = '1.4.2'
 }
 
 apply {
