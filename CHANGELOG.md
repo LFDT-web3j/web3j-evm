@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [6.0.0]() (Upcoming)
+# [6.1.0]() (Upcoming)
 
 ### Bug Fixes
 
@@ -11,9 +11,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-- Bump snapshot to 6.0.0 and fix tests [#130](https://github.com/hyperledger-web3j/web3j-evm/pull/130)
+- Bump various dependencies [#131](https://github.com/LFDT-web3j/web3j-evm/pull/131)
 
 ### BREAKING CHANGES
+
+- 
 
 - Upgraded Besu Version and added support for Fusaka [#129](https://github.com/hyperledger-web3j/web3j-evm/pull/129)
 
