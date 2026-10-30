@@ -101,3 +101,5 @@ tasks.named("test").configure { dependsOn("spotlessKotlin", "spotlessJava") }
 
 // To publish in mavenLocal()
 //tasks.withType(Sign)*.enabled = false
+
+apply from: "$rootDir/gradle/release-validation.gradle"
