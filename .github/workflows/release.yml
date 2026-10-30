@@ -129,7 +129,7 @@ jobs:
           ARTIFACTS=()
           while IFS= read -r -d '' ARTIFACT; do
             ARTIFACTS+=("${ARTIFACT#./}")
-          done < <(find . -type f -path "*/build/staging-deploy/org/web3j-evm/*/$RELEASE_VERSION/*" -print0)
+          done < <(find . -type f -path "*/build/staging-deploy/org/web3j/web3j-evm/*/$RELEASE_VERSION/*" -print0)
           if (( ${#ARTIFACTS[@]} == 0 )); then
             echo "No release artifacts were staged." >&2
             exit 1
@@ -151,7 +151,7 @@ jobs:
         with:
           name: release-artifacts-${{ steps.release_name.outputs.version }}-${{ github.run_attempt }}
           path: |
-            **/build/staging-deploy/org/web3j-evm/*/${{ steps.release_name.outputs.version }}/*
+            **/build/staging-deploy/org/web3j/web3j-evm/*/${{ steps.release_name.outputs.version }}/*
             release-expected-files.txt
             release-checksums.sha256
             release-metadata.txt
@@ -164,7 +164,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.release_name.outputs.version }}
         run: |
           TEST_DIR="$(mktemp -d "$RUNNER_TEMP/release-verifier.XXXXXX")"
-          MISSING="utils/build/staging-deploy/org/web3j-evm/utils/$RELEASE_VERSION/utils-$RELEASE_VERSION.module"
+          MISSING="utils/build/staging-deploy/org/web3j/web3j-evm/utils/$RELEASE_VERSION/utils-$RELEASE_VERSION.module"
           cp release-expected-files.txt "$TEST_DIR/expected-files.txt"
           restore_file() {
             if [[ -f "$TEST_DIR/withheld.module" ]]; then
@@ -224,7 +224,7 @@ jobs:
       - name: Generate Javadocs
         env:
           RELEASE_VERSION: ${{ needs.release.outputs.version }}
-        run: bash ./gradlew "-Pversion=$RELEASE_VERSION" core:javadoc
+        run: bash ./gradlew "-Pversion=$RELEASE_VERSION" javadoc
       - name: Save rehearsal Javadocs
         if: github.event_name != 'push'
         uses: actions/upload-artifact@v4
