@@ -7,7 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
--
+- Fix workflows [#132](https://github.com/LFDT-web3j/web3j-evm/pull/132)
 
 ### Features
 
