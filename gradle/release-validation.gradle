@@ -18,7 +18,7 @@ tasks.register('verifyReleaseArtifacts') {
             throw new GradleException("Cannot remove stale release inventory: $inventory")
         }
         def expected = []
-        def modules = rootProject.subprojects.findAll { it.name != 'integration-tests' }
+        def modules = [rootProject]
         if (modules.empty) {
             throw new GradleException('No release modules configured')
         }
